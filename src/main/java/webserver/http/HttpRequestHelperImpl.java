@@ -20,7 +20,8 @@ public class HttpRequestHelperImpl implements HttpRequestHelper {
 
 	@Override
 	public HttpRequest create(InputStream inputStream) throws IOException {
-		try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"))) {
+		try {
+			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
 			//Get Request Line
 			String requestLine = bufferedReader.readLine();
 			log.debug("Request Line : {}", requestLine);

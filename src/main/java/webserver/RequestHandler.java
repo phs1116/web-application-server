@@ -2,7 +2,7 @@ package webserver;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import webserver.controller.HttpController;
+import webserver.dispatcher.HttpDispatcher;
 import webserver.http.HttpRequest;
 import webserver.http.HttpRequestHelper;
 import webserver.http.HttpRequestHelperImpl;
@@ -16,7 +16,7 @@ import java.net.Socket;
 public class RequestHandler implements Runnable {
 	private static final Logger log = LoggerFactory.getLogger(RequestHandler.class);
 	private static final HttpRequestHelper httpRequestHelper = new HttpRequestHelperImpl();
-	private static final HttpController httpController = new HttpController();
+	private static final HttpDispatcher httpController = new HttpDispatcher();
 
 	private Socket connection;
 
@@ -33,7 +33,7 @@ public class RequestHandler implements Runnable {
 
 			HttpRequest httpRequest =  httpRequestHelper.create(in);
 			HttpResponse httpResponse = new HttpResponse(out);
-			httpController.action(httpRequest, httpResponse);
+			httpController.dispatch(httpRequest, httpResponse);
 		} catch (IOException e) {
 			log.error(e.getMessage());
 		}

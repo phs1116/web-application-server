@@ -1,5 +1,8 @@
 package webserver.http;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -15,14 +18,16 @@ import java.util.stream.Collectors;
  * Created by hspark on 2018. 4. 1..
  */
 public class HttpResponse {
-	private OutputStream outputStream;
+	private static final Logger log = LoggerFactory.getLogger(HttpResponse.class);
+	private DataOutputStream dos;
+
 	private HttpStatusCode status;
 	private Map<String, String> headers = new HashMap<>();
 	private Map<String, String> cookies = new HashMap<>();
 	private byte[] body;
 
 	public HttpResponse(OutputStream outputStream) {
-		this.outputStream = outputStream;
+		this.dos = new DataOutputStream(outputStream);
 	}
 
 	public Map<String, String> getHeaders() {
@@ -80,30 +85,37 @@ public class HttpResponse {
 		this.body = body;
 	}
 
-	public void forward(String path) throws IOException {
-		if (!path.isEmpty()) {
+	public void forward(String path) {
+		try {
 			File file = new File("./webapp" + path);
+
 			if (!file.exists()) {
 				// TODO: 2018. 4. 9.  파일 뿐만 아니라  String 리턴은 어떻게 할지 고민해보자
 				this.setStatus(HttpStatusCode.NOT_FOUND);
 			} else {
-				this.setStatus(HttpStatusCode.FOUND);
+				this.addHeader("Content-Type", ContentType.findContentTypeByFilename(file.getName()).getMimeType());
+				this.setStatus(HttpStatusCode.OK);
 				this.setBody(Files.readAllBytes(file.toPath()));
 			}
 			int bodyLength = this.getBody() == null ? 0 : this.getBody().length;
 			this.addHeader("Content-Length", String.valueOf(bodyLength));
+			flushResponse();
+		} catch (IOException e) {
+			log.error(e.getMessage());
 		}
-		flushResponse();
 	}
 
-	public void sendRedirect(String url) throws IOException {
-		this.setStatus(HttpStatusCode.FOUND);
-		this.addHeader("Location", url);
-		flushResponse();
+	public void sendRedirect(String url) {
+		try {
+			this.setStatus(HttpStatusCode.FOUND);
+			this.addHeader("Location", url);
+			flushResponse();
+		} catch (IOException e) {
+			log.error(e.getMessage());
+		}
 	}
 
 	private void flushResponse() throws IOException {
-		DataOutputStream dos = new DataOutputStream(outputStream);
 
 		dos.writeBytes(this.status.getLine());
 		for (String header : this.getHeaderLines()) {
