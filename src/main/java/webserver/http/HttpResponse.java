@@ -1,33 +1,44 @@
 package webserver.http;
 
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
  * Created by hspark on 2018. 4. 1..
  */
 public class HttpResponse {
+	private OutputStream outputStream;
 	private HttpStatusCode status;
 	private Map<String, String> headers = new HashMap<>();
 	private Map<String, String> cookies = new HashMap<>();
 	private byte[] body;
 
+	public HttpResponse(OutputStream outputStream) {
+		this.outputStream = outputStream;
+	}
+
 	public Map<String, String> getHeaders() {
 		return headers;
 	}
 
-	public void setHeaders(Map<String, String> headers) {
-		this.headers = headers;
+	public void addHeaders(Map<String, String> headers) {
+		this.headers.putAll(headers);
 	}
 
 	public Map<String, String> getCookies() {
 		return cookies;
 	}
 
-	public void setCookies(Map<String, String> cookies) {
-		this.cookies = cookies;
+	public void addCookies(Map<String, String> cookies) {
+		this.cookies.putAll(cookies);
 	}
 
 	public HttpStatusCode getStatus() {
@@ -38,7 +49,7 @@ public class HttpResponse {
 		this.status = status;
 	}
 
-	public void setHeader(String key, String value) {
+	public void addHeader(String key, String value) {
 		this.headers.put(key, value);
 	}
 
@@ -54,7 +65,7 @@ public class HttpResponse {
 	public List<String> getHeaderLines() {
 		List<String> headerLines = headers.keySet().stream().map(s -> String.format("%s: %s\r\n", s, headers.get(s)))
 			.collect(Collectors.toList());
-			String cookieLine = getCookieLine();
+		String cookieLine = getCookieLine();
 		if (cookieLine != null && !cookieLine.isEmpty()) {
 			headerLines.add(String.format("%s: %s", "Set-Cookie", cookieLine));
 		}
@@ -67,5 +78,44 @@ public class HttpResponse {
 
 	public void setBody(byte[] body) {
 		this.body = body;
+	}
+
+	public void forward(String path) throws IOException {
+		if (!path.isEmpty()) {
+			File file = new File("./webapp" + path);
+			if (!file.exists()) {
+				// TODO: 2018. 4. 9.  파일 뿐만 아니라  String 리턴은 어떻게 할지 고민해보자
+				this.setStatus(HttpStatusCode.NOT_FOUND);
+			} else {
+				this.setStatus(HttpStatusCode.FOUND);
+				this.setBody(Files.readAllBytes(file.toPath()));
+			}
+			int bodyLength = this.getBody() == null ? 0 : this.getBody().length;
+			this.addHeader("Content-Length", String.valueOf(bodyLength));
+		}
+		flushResponse();
+	}
+
+	public void sendRedirect(String url) throws IOException {
+		this.setStatus(HttpStatusCode.FOUND);
+		this.addHeader("Location", url);
+		flushResponse();
+	}
+
+	private void flushResponse() throws IOException {
+		DataOutputStream dos = new DataOutputStream(outputStream);
+
+		dos.writeBytes(this.status.getLine());
+		for (String header : this.getHeaderLines()) {
+			dos.writeBytes(header);
+		}
+
+		dos.writeBytes("\r\n");
+
+		if (Objects.nonNull(this.getBody())) {
+			dos.write(this.getBody(), 0, this.getBody().length);
+		}
+		dos.flush();
+
 	}
 }

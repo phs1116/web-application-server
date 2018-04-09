@@ -8,12 +8,10 @@ import webserver.http.HttpRequestHelper;
 import webserver.http.HttpRequestHelperImpl;
 import webserver.http.HttpResponse;
 
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.util.Objects;
 
 public class RequestHandler implements Runnable {
 	private static final Logger log = LoggerFactory.getLogger(RequestHandler.class);
@@ -33,29 +31,9 @@ public class RequestHandler implements Runnable {
 
 		try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream()) {
 
-			DataOutputStream dos = new DataOutputStream(out);
 			HttpRequest httpRequest =  httpRequestHelper.create(in);
-			HttpResponse httpResponse = httpController.action(httpRequest);
-
-			flushResponse(dos, httpResponse);
-		} catch (IOException e) {
-			log.error(e.getMessage());
-		}
-	}
-
-	private void flushResponse(DataOutputStream dos, HttpResponse httpResponse) {
-		try {
-			dos.writeBytes(httpResponse.getStatus().getLine());
-			for (String header : httpResponse.getHeaderLines()) {
-				dos.writeBytes(header);
-			}
-
-			dos.writeBytes("\r\n");
-
-			if (Objects.nonNull(httpResponse.getBody())) {
-				dos.write(httpResponse.getBody(), 0, httpResponse.getBody().length);
-			}
-			dos.flush();
+			HttpResponse httpResponse = new HttpResponse(out);
+			httpController.action(httpRequest, httpResponse);
 		} catch (IOException e) {
 			log.error(e.getMessage());
 		}

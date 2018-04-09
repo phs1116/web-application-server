@@ -3,11 +3,8 @@ package webserver.controller;
 import webserver.handler.*;
 import webserver.http.HttpRequest;
 import webserver.http.HttpResponse;
-import webserver.http.HttpStatusCode;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -26,10 +23,9 @@ public class HttpController {
 		handlerMap.put(UserListActionHandler.URL, new UserListActionHandler());
 	}
 
-	public HttpResponse action(HttpRequest httpRequest) throws IOException {
+	public void action(HttpRequest httpRequest, HttpResponse httpResponse) throws IOException {
 		ActionHandler handler = handlerMap.get(httpRequest.getRequestPath());
-		HttpResponse httpResponse = new HttpResponse();
-		httpResponse.setHeader("Content-Type", httpRequest.getHeader("Accept"));
+		httpResponse.addHeader("Content-Type", httpRequest.getHeader("Accept"));
 
 		String viewPage = Objects.isNull(handler) ?
 			httpRequest.getRequestPath() : handler.process(httpRequest, httpResponse);
@@ -38,23 +34,10 @@ public class HttpController {
 		int index = viewPage.lastIndexOf(REDIRECT_KEYWORD);
 		if (index != -1) {
 			// Redirect
-			String url = viewPage.substring(index + REDIRECT_KEYWORD.length());
-			httpResponse.setStatus(HttpStatusCode.FOUND);
-			httpResponse.setHeader("Location", url);
+			httpResponse.sendRedirect(viewPage.substring(index + REDIRECT_KEYWORD.length()));
 		} else {
 			// Forward
-			httpResponse.setStatus(HttpStatusCode.OK);
-			if (!viewPage.isEmpty()) {
-				File file = new File("./webapp" + viewPage);
-				if (!file.exists()) {
-					httpResponse.setBody(viewPage.getBytes());
-				} else {
-					httpResponse.setBody(Files.readAllBytes(file.toPath()));
-				}
-				int bodyLength = httpResponse.getBody() == null ? 0 : httpResponse.getBody().length;
-				httpResponse.setHeader("Content-Length", String.valueOf(bodyLength));
-			}
+			httpResponse.forward(viewPage);
 		}
-		return httpResponse;
 	}
 }
