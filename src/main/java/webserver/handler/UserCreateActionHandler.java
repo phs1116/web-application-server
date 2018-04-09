@@ -2,11 +2,9 @@ package webserver.handler;
 
 import model.User;
 import service.UserService;
-import webserver.http.HttpMethod;
 import webserver.http.HttpRequest;
 import webserver.http.HttpResponse;
 
-import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -14,15 +12,10 @@ import java.util.Map;
  */
 public class UserCreateActionHandler implements ActionHandler {
 	public static final String URL = "/user/create";
+
 	@Override
 	public String process(HttpRequest httpRequest, HttpResponse httpResponse) {
-		Map<String, String> params = Collections.emptyMap();
-		if (httpRequest.getMethod() == HttpMethod.GET) {
-			params = httpRequest.getUrl().getParmas();
-		} else if (httpRequest.getMethod() == HttpMethod.POST) {
-			params = httpRequest.getBodyParams();
-		}
-
+		Map<String, String> params = httpRequest.getParameters();
 		User user = new User();
 		user.setEmail(params.get("email"));
 		user.setName(params.get("name"));

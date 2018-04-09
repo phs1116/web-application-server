@@ -16,8 +16,8 @@ public class LoginActionHandler implements ActionHandler {
 	@Override
 	public String process(HttpRequest httpRequest, HttpResponse httpResponse) {
 			UserDTO userDTO = new UserDTO();
-		userDTO.setUserId(httpRequest.getBodyParams().get("userId"));
-		userDTO.setPassword(httpRequest.getBodyParams().get("password"));
+		userDTO.setUserId(httpRequest.getParameters().get("userId"));
+		userDTO.setPassword(httpRequest.getParameters().get("password"));
 		Optional<User> userOptional = UserService.INSTANCE.findById(userDTO);
 		if(userOptional.isPresent()){
 			httpResponse.getCookies().put("logined", "true");

@@ -27,12 +27,12 @@ public class HttpController {
 	}
 
 	public HttpResponse action(HttpRequest httpRequest) throws IOException {
-		ActionHandler handler = handlerMap.get(httpRequest.getUrl().getRequestPath());
+		ActionHandler handler = handlerMap.get(httpRequest.getRequestPath());
 		HttpResponse httpResponse = new HttpResponse();
 		httpResponse.setHeader("Content-Type", httpRequest.getHeader("Accept"));
 
 		String viewPage = Objects.isNull(handler) ?
-			httpRequest.getUrl().getRequestPath() : handler.process(httpRequest, httpResponse);
+			httpRequest.getRequestPath() : handler.process(httpRequest, httpResponse);
 
 		// TODO: 2018. 4. 3. 리팩토링 필요
 		int index = viewPage.lastIndexOf(REDIRECT_KEYWORD);

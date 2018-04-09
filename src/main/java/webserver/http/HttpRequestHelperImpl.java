@@ -5,40 +5,45 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.HttpRequestUtils;
 import util.IOUtils;
-import webserver.RequestHandler;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Map;
 
 /**
  * Created by hspark on 2018. 4. 1..
  */
 public class HttpRequestHelperImpl implements HttpRequestHelper {
-	private static final Logger log = LoggerFactory.getLogger(RequestHandler.class);
+	private static final Logger log = LoggerFactory.getLogger(HttpRequestHelper.class);
 
 	@Override
-	public HttpRequest create(BufferedReader bufferedReader) throws IOException {
+	public HttpRequest create(InputStream inputStream) throws IOException {
+		try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"))) {
+			//Get Request Line
+			String requestLine = bufferedReader.readLine();
+			log.debug("Request Line : {}", requestLine);
+			HttpRequest httpRequest = HttpRequest.generateByRequestLine(requestLine);
 
-		//Get Request Line
-		String requestLine = bufferedReader.readLine();
-		log.debug("Request Line : {}", requestLine);
-		HttpRequest httpRequest = HttpRequest.generateByRequestLine(requestLine);
+			//Get Header Line
+			Map<String, String> headers = readHeaders(bufferedReader);
+			httpRequest.addHeaders(headers);
 
-		//Get Header Line
-		Map<String, String> headers = readHeaders(bufferedReader);
-		httpRequest.setHeaders(headers);
+			//Set Cookie
+			httpRequest.addCookies(HttpRequestUtils.parseCookies(headers.get("Cookie")));
 
-		//Set Cookie
-		httpRequest.setCookies(HttpRequestUtils.parseCookies(headers.get("Cookie")));
-
-		//Get Body Line
-		String contentLength = httpRequest.getHeaders().get("Content-Length");
-		if (contentLength != null && !contentLength.isEmpty()) {
-			Map<String, String> bodyParams = readBody(bufferedReader, httpRequest, contentLength);
-			httpRequest.setBodyParams(bodyParams);
+			//Get Body Line
+			String contentLength = httpRequest.getHeaders().get("Content-Length");
+			if (contentLength != null && !contentLength.isEmpty()) {
+				Map<String, String> bodyParams = readBody(bufferedReader, httpRequest, contentLength);
+				httpRequest.addParameters(bodyParams);
+			}
+			return httpRequest;
+		} catch (IOException e) {
+			log.error(e.getMessage());
+			throw e;
 		}
-
-		return httpRequest;
 	}
 
 	private Map<String, String> readBody(BufferedReader bufferedReader, HttpRequest httpRequest, String contentLength) throws IOException {

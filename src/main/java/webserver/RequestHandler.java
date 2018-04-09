@@ -8,7 +8,10 @@ import webserver.http.HttpRequestHelper;
 import webserver.http.HttpRequestHelperImpl;
 import webserver.http.HttpResponse;
 
-import java.io.*;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 import java.util.Objects;
 
@@ -31,8 +34,7 @@ public class RequestHandler implements Runnable {
 		try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream()) {
 
 			DataOutputStream dos = new DataOutputStream(out);
-			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(in, "UTF-8"));
-			HttpRequest httpRequest = httpRequestHelper.create(bufferedReader);
+			HttpRequest httpRequest =  httpRequestHelper.create(in);
 			HttpResponse httpResponse = httpController.action(httpRequest);
 
 			flushResponse(dos, httpResponse);
