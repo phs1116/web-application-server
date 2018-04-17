@@ -7,7 +7,6 @@ import util.HttpRequestUtils;
 import util.IOUtils;
 import webserver.http.cookie.HttpCookie;
 import webserver.http.cookie.NextHttpCookie;
-import webserver.http.session.HttpSession;
 import webserver.http.session.HttpSessionsHolder;
 
 import java.io.BufferedReader;
@@ -40,7 +39,8 @@ public class HttpRequestHelperImpl implements HttpRequestHelper {
 			httpRequest.setHttpCookie(httpCookie);
 
 			//Set Session
-			httpRequest.setHttpSession(getHttpSession(httpRequest));
+			String sessionId = httpRequest.getCookie("JSESSIONID");
+			httpRequest.setHttpSession(HttpSessionsHolder.getSession(sessionId));
 
 
 			//Get Body Line
@@ -56,9 +56,6 @@ public class HttpRequestHelperImpl implements HttpRequestHelper {
 		}
 	}
 
-	private HttpSession getHttpSession(HttpRequest httpRequest) {
-		return HttpSessionsHolder.getSession(httpRequest.getCookie("JSESSIONID"));
-	}
 
 	private Map<String, String> readBody(BufferedReader bufferedReader, HttpRequest httpRequest, String contentLength) throws IOException {
 		String bodyString = IOUtils.readData(bufferedReader, Integer.parseInt(contentLength));

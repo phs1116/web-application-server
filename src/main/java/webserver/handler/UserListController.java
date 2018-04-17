@@ -21,6 +21,7 @@ public class UserListController extends AbstractController {
 		User loginUser = (User)httpRequest.getHttpSession().getAttribute("user");
 		if (Objects.nonNull(loginUser)) {
 			httpResponse.forward("/user/list.html");
+			return;
 		}
 		httpResponse.sendRedirect("/user/login");
 	}
