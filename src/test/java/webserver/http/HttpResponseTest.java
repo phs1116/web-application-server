@@ -1,6 +1,7 @@
 package webserver.http;
 
 import org.junit.Test;
+import webserver.http.response.HttpResponse;
 
 import java.io.File;
 import java.io.FileNotFoundException;

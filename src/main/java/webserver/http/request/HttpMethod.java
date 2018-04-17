@@ -1,4 +1,4 @@
-package webserver.http;
+package webserver.http.request;
 
 /**
  * Created by hspark on 2018. 3. 30..

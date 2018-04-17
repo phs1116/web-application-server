@@ -1,7 +1,9 @@
-package webserver.http;
+package webserver.http.request;
 
 import com.google.common.collect.Maps;
 import util.HttpRequestUtils;
+import webserver.http.cookie.HttpCookie;
+import webserver.http.session.HttpSession;
 
 import java.util.Map;
 
@@ -15,8 +17,9 @@ public class HttpRequest {
 	private HttpMethod method;
 	private String httpVersion; // TODO: 2018. 4. 1. 추후 필요하다면 enum으로
 	private Map<String, String> headers = Maps.newHashMap();
-	private Map<String, String> cookies = Maps.newHashMap();
 	private Map<String, String> parameters = Maps.newHashMap();
+	private HttpCookie httpCookie;
+	private HttpSession httpSession;
 
 	public static HttpRequest generateByRequestLine(String requestLine) {
 		HttpRequest httpRequest = new HttpRequest();
@@ -78,20 +81,19 @@ public class HttpRequest {
 		return headers.get(key);
 	}
 
-	public Map<String, String> getCookies() {
-		return cookies;
+	public HttpCookie getCookies() {
+		return this.httpCookie;
 	}
 
+	public void setHttpCookie(HttpCookie httpCookie){
+		this.httpCookie = httpCookie;
+	}
 	public String getCookie(String key) {
-		return this.cookies.get(key);
+		return this.httpCookie.getCookie(key);
 	}
 
-	public void addCookies(Map<String, String> cookies) {
-		this.cookies.putAll(cookies);
-	}
-
-	public void addCookie(String key, String value) {
-		this.cookies.put(key, value);
+	public void setCookie(String key, String value) {
+		this.httpCookie.setCookie(key, value);
 	}
 
 	public void addParameters(Map<String, String> bodyParams) {
@@ -104,5 +106,13 @@ public class HttpRequest {
 
 	public String getParameter(String key) {
 		return this.parameters.get(key);
+	}
+
+	public HttpSession getHttpSession() {
+		return httpSession;
+	}
+
+	public void setHttpSession(HttpSession session) {
+		this.httpSession = session;
 	}
 }

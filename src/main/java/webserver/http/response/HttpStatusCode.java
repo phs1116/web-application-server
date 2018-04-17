@@ -1,4 +1,4 @@
-package webserver.http;
+package webserver.http.response;
 
 /**
  * Created by coupang on 2018. 4. 2..

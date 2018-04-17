@@ -1,7 +1,10 @@
 package webserver.handler;
 
-import webserver.http.HttpRequest;
-import webserver.http.HttpResponse;
+import model.User;
+import webserver.http.request.HttpRequest;
+import webserver.http.response.HttpResponse;
+
+import java.util.Objects;
 
 /**
  * Created by hspark on 2018. 4. 3..
@@ -15,8 +18,8 @@ public class UserListController extends AbstractController {
 
 	@Override
 	void doGet(HttpRequest httpRequest, HttpResponse httpResponse) {
-		boolean isLogined = Boolean.parseBoolean(httpRequest.getCookie("logined"));
-		if (isLogined) {
+		User loginUser = (User)httpRequest.getHttpSession().getAttribute("user");
+		if (Objects.nonNull(loginUser)) {
 			httpResponse.forward("/user/list.html");
 		}
 		httpResponse.sendRedirect("/user/login");

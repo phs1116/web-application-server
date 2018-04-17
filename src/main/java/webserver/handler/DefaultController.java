@@ -1,7 +1,7 @@
 package webserver.handler;
 
-import webserver.http.HttpRequest;
-import webserver.http.HttpResponse;
+import webserver.http.request.HttpRequest;
+import webserver.http.response.HttpResponse;
 
 /**
  * Created by hspark on 2018. 4. 1..

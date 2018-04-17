@@ -3,10 +3,10 @@ package webserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import webserver.dispatcher.HttpDispatcher;
-import webserver.http.HttpRequest;
-import webserver.http.HttpRequestHelper;
-import webserver.http.HttpRequestHelperImpl;
-import webserver.http.HttpResponse;
+import webserver.http.request.HttpRequest;
+import webserver.http.request.HttpRequestHelper;
+import webserver.http.request.HttpRequestHelperImpl;
+import webserver.http.response.HttpResponse;
 
 import java.io.IOException;
 import java.io.InputStream;

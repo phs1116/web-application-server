@@ -1,8 +1,8 @@
 package webserver.dispatcher;
 
 import webserver.handler.*;
-import webserver.http.HttpRequest;
-import webserver.http.HttpResponse;
+import webserver.http.request.HttpRequest;
+import webserver.http.response.HttpResponse;
 
 import java.io.IOException;
 import java.util.HashMap;

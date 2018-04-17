@@ -3,8 +3,8 @@ package webserver.handler;
 import dto.UserDTO;
 import model.User;
 import service.UserService;
-import webserver.http.HttpRequest;
-import webserver.http.HttpResponse;
+import webserver.http.request.HttpRequest;
+import webserver.http.response.HttpResponse;
 
 import java.util.Optional;
 
@@ -31,10 +31,9 @@ public class LoginController extends AbstractController {
 		Optional<User> userOptional = UserService.INSTANCE.findById(userDTO);
 
 		if (userOptional.isPresent()) {
-			httpResponse.getCookies().put("logined", "true");
+			httpRequest.getHttpSession().setAttribute("user", userOptional.get());
 			httpResponse.sendRedirect("/index.html");
 		}
-		httpResponse.getCookies().put("logined", "false");
 		httpResponse.sendRedirect("/user/login_failed.html");
 	}
 }

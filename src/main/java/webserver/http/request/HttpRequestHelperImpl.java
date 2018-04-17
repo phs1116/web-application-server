@@ -1,10 +1,14 @@
-package webserver.http;
+package webserver.http.request;
 
 import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.HttpRequestUtils;
 import util.IOUtils;
+import webserver.http.cookie.HttpCookie;
+import webserver.http.cookie.NextHttpCookie;
+import webserver.http.session.HttpSession;
+import webserver.http.session.HttpSessionsHolder;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -32,7 +36,12 @@ public class HttpRequestHelperImpl implements HttpRequestHelper {
 			httpRequest.addHeaders(headers);
 
 			//Set Cookie
-			httpRequest.addCookies(HttpRequestUtils.parseCookies(headers.get("Cookie")));
+			HttpCookie httpCookie = new NextHttpCookie(headers.get("Cookie"));
+			httpRequest.setHttpCookie(httpCookie);
+
+			//Set Session
+			httpRequest.setHttpSession(getHttpSession(httpRequest));
+
 
 			//Get Body Line
 			String contentLength = httpRequest.getHeaders().get("Content-Length");
@@ -45,6 +54,10 @@ public class HttpRequestHelperImpl implements HttpRequestHelper {
 			log.error(e.getMessage());
 			throw e;
 		}
+	}
+
+	private HttpSession getHttpSession(HttpRequest httpRequest) {
+		return HttpSessionsHolder.getSession(httpRequest.getCookie("JSESSIONID"));
 	}
 
 	private Map<String, String> readBody(BufferedReader bufferedReader, HttpRequest httpRequest, String contentLength) throws IOException {
